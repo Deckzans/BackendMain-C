@@ -1,0 +1,222 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// Enums 
+enum Rol {
+  estandar
+  administrador
+  requisicion
+}
+
+enum Escolaridad2 {
+  no_aplica
+  preescolar
+  primaria
+  secundaria
+  tecnico_con_secundaria
+  preparatoria_bachillerato
+  tecnico_con_preparatoria
+  profesional
+  maestria_doctorado
+}
+
+enum Estado_civil { 
+  casado
+  divorciado
+  no_aplica
+  se_ignora
+  separado
+  soltero
+  union_libre
+  viudo
+}
+
+enum Status { 
+  activo
+  baja
+}
+
+enum DescripcionArea {
+CALIDAD  
+CRUM
+EL_SALTO
+C4_GOMEZ_PALACIO
+C4_SANTIAGO_PAPASQUIARO
+ADMINISTRATIVO
+CARTOGRAFIA
+PSICOLOGIA
+S_T_E_911
+SDA_089
+SISTEMAS_Y_DESARROLLO
+TECNICO
+TELECOMUNICACIONES
+VIDEO_VIGILANCIA
+DIRECCION_C5
+AREA_DE_DIAGNOSTICO_DE_PROCESOS
+AREA_JURIDICA
+AREA_LINEA_AMARILLA
+DEPARTAMENTO_ESPACHO
+DEPARTAMENTO_DE_INVESTIGACION_Y_ANALISIS
+DEPARTAMENTO_TELEFONIA_Y_RED_DE_TRANSPORTE
+PERSONAL_SIN_IDENTIFICAR_LUGAR_FISICO
+PROGRAMA_ESMERALDA
+VIGILANCIA_INTERNA
+}
+// Modelo Usuario
+model Usuario { 
+  id Int @id @default(autoincrement()) 
+  nombre String? @db.VarChar(45) 
+  area String? @db.VarChar(45) 
+  password String @db.VarChar(200) 
+  rol Rol @default(estandar) 
+  usuario String @unique @db.VarChar(45) 
+  createAt DateTime @db.Date @default(now()) 
+  //Relacion con otros modelos
+  empleado Empleado[]
+  requisicion Requisicion[]
+}
+
+// Modelo Area
+model Area { 
+  id Int @id @default(autoincrement()) 
+ descripcion DescripcionArea? @default(CALIDAD) 
+  empleado Empleado[]
+}
+
+// Modelo Escolaridad 
+model Escolaridad { 
+  id Int @id @default(autoincrement()) 
+  escolaridad Escolaridad2? 
+   empleado Empleado[]
+}
+
+// Modelo Estado Civil
+model EstadoCivil { 
+  id Int @id @default(autoincrement()) 
+  estado Estado_civil? 
+  empleado Empleado[]
+}
+
+// Modelo Empleado
+model Empleado { 
+  id Int @id @default(autoincrement()) 
+
+  // Cambios en los nombres de los campos
+  aPaterno String? @db.VarChar(100) 
+  aMaterno String? @db.VarChar(100) 
+  nombre String? @db.VarChar(100) 
+  sexo String? @db.VarChar(45) 
+  fechaNacimiento DateTime? @db.Date 
+  fechaIngreso DateTime? @db.Date 
+  cargo String? @db.VarChar(100) 
+  sueldoBruto Float 
+  sueldoNeto Float 
+  regimen String?  @db.VarChar(100) 
+  observaciones String? @db.VarChar(255) // Aumento de la longitud
+  status Status @default(baja) 
+  createAt DateTime @db.Date @default(now()) 
+  llave String @db.VarChar(255) 
+  imagenEmpleado String? @db.VarChar(255) 
+  // Relaciones con otros modelos
+   usuario Usuario? @relation(fields: [usuarioId], references: [id], onDelete: SetNull)
+  usuarioId Int?
+
+  area   Area? @relation(fields: [areaId], references: [id])
+  areaId Int?
+
+  escolaridad   Escolaridad? @relation(fields: [escolaridadId], references: [id])
+  escolaridadId Int?
+
+  estadocivil   EstadoCivil? @relation(fields: [estadocivilid], references: [id])
+  estadocivilid Int?
+  
+  // Relaciones con otros modelos
+  //Relaciones con las que interactuan un empleado
+  formacion Formacion[]
+  incapacidad incapacidad[]
+  permiso Permiso[]
+  vacaciones Vacaciones[]
+  diaeconomico DiaEconomico[]
+}
+
+model Formacion { 
+  id Int @id @default(autoincrement())
+  observaciones String @db.VarChar(200)
+  nombreArchivo String @db.VarChar(100)
+  fechaCarga DateTime @db.Date @default(now())
+  createAt DateTime @db.Date @default(now()) 
+  //Relaciones con otros modelos
+  empleado Empleado @relation(fields: [empleadoId],references: [id], onDelete: NoAction, onUpdate: NoAction)
+  empleadoId Int
+}
+
+model incapacidad { 
+  id Int @id @default(autoincrement())
+  observaciones String @db.VarChar(200)
+  nombreImagen  String @db.VarChar(100)
+  fechaIncapacidad DateTime? @db.Date 
+  diasIncapacitado Int  
+  tipo  String @db.VarChar(100)
+  createAt DateTime @db.Date @default(now()) 
+  //Relaciones con otros modelos
+  empleado Empleado @relation(fields: [empleadoId],references: [id], onDelete: NoAction, onUpdate: NoAction)
+  empleadoId Int
+}
+
+model Permiso { 
+  id Int @id @default(autoincrement())
+  observaciones String @db.VarChar(200)
+  nombreImagen  String @db.VarChar(100)
+  fechaPermiso DateTime? @db.Date 
+  fechaRegreso DateTime? @db.Date 
+  createAt DateTime @db.Date @default(now()) 
+  //Relaciones con otros modelos
+  empleado Empleado @relation(fields: [empleadoId],references: [id], onDelete: NoAction, onUpdate: NoAction)
+  empleadoId Int
+}
+
+model Vacaciones { 
+  id Int @id @default(autoincrement())
+  periodo String @db.VarChar(200)
+  nombreImagen  String @db.VarChar(100)
+  year  String @db.VarChar(100)
+  fechaInicio DateTime? @db.Date 
+  fechaTermino DateTime? @db.Date 
+  integracion DateTime? @db.Date 
+  createAt DateTime @db.Date @default(now()) 
+  //Relaciones con otros modelos
+  empleado Empleado @relation(fields: [empleadoId],references: [id], onDelete: NoAction, onUpdate: NoAction)
+  empleadoId Int
+}
+
+model DiaEconomico { 
+  id Int @id @default(autoincrement())
+  observaciones String @db.VarChar(200)
+  nombreImagen  String @db.VarChar(100)
+  fechaDias DateTime? @db.Date 
+  fechaDiasRestantes Int?
+  diasTotales Int?
+  createAt DateTime @db.Date @default(now()) 
+  //Relaciones con otros modelos
+  empleado Empleado @relation(fields: [empleadoId],references: [id], onDelete: NoAction, onUpdate: NoAction)
+  empleadoId Int
+}
+
+model Requisicion { 
+  id Int @id @default(autoincrement())
+  material String?  @db.VarChar(255) @default("No agrego contenido el usuario")
+  nivelImportancia String?  @db.VarChar(255) @default("No agrego contenido el usuario")
+  createAt DateTime @db.Date @default(now()) 
+  status String?  @db.VarChar(100) @default("No realizada")
+  usuario Usuario @relation(fields: [usuarioId],references: [id],onDelete: NoAction, onUpdate: NoAction)
+  usuarioId Int
+}

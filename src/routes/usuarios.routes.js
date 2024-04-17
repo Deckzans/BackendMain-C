@@ -127,7 +127,7 @@ router.post('/login', async (req, res) => {
                     usuarioId: usuario.id,
                     usuario: usuario.usuario,
                     rol: usuario.rol,
-                }, "pachanga la changa", { expiresIn: '1h' });
+                }, "7F9$#k3Yz%P!vE*5@&sL", { expiresIn: '1h' });
 
                 res.status(200).json({
                     success: true,
@@ -180,7 +180,7 @@ router.post('/verificar-token', (req, res) => {
   
     try {
       // Verificar el token con la misma clave secreta utilizada para firmar el token
-      jwt.verify(token, 'pachanga la changa');
+      jwt.verify(token, '7F9$#k3Yz%P!vE*5@&sL');
   
       res.status(200).json({
         success: true,

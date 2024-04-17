@@ -4,50 +4,81 @@ import { responsesUtiles } from '../utils/index.js'
 import { uploadImagen } from '../multer/multer.js';
 import { isValidImageExtension } from '../helpers/validationsImag.js';
 
-const router = Router(); 
+const router = Router();
 
-    router.get('/', (req, res) => {
-        res.send('Hola desde empleados Router')
-    })
+router.get('/', (req, res) => {
+    res.send('Hola desde empleados Router')
+})
 
-    router.post('/agregar', uploadImagen.single('imagenEmpleado2'), async (req, res) => {
-        if (!req.file) {
-            // Manejar el caso en que no se haya subido ninguna imagen
-            return responsesUtiles.manejarError(res, 'No se ha subido ninguna imagen');
-        }
+router.post('/agregar', uploadImagen.single('imagenEmpleado2'), async (req, res) => {
+    if (!req.file) {
+        // Manejar el caso en que no se haya subido ninguna imagen
+        return responsesUtiles.manejarError(res, 'No se ha subido ninguna imagen');
+    }
 
-        if (!isValidImageExtension(req.file.originalname)) {
-            return responsesUtiles.manejarError(res, 'Formato de archivo no válido. Solo se permiten archivos JPG, JPEG, PNG o GIF.');
-        }
-    
-        try {
-            const convertirANumerico = (valor) => parseFloat(valor) || 0;
-    
-            const datosEmpleado = {
-                ...req.body,
-                usuarioId: convertirANumerico(req.body.usuarioId),
-                sueldoBruto: convertirANumerico(req.body.sueldoBruto),
-                sueldoNeto: convertirANumerico(req.body.sueldoNeto),
-                escolaridadId: convertirANumerico(req.body.escolaridadId),
-                estadocivilid: convertirANumerico(req.body.estadocivilid),
-                areaId: convertirANumerico(req.body.areaId),
-            };
-    
-            const nuevoEmpleado = await EmpleadoService.crearEmpleado(datosEmpleado);
-    
-            return nuevoEmpleado === 'clave_unica'
-                ? responsesUtiles.manejarError(res, 'Dato duplicado')
-                : nuevoEmpleado
-                    ? responsesUtiles.OperacionExitosa(res, nuevoEmpleado, 'Empleado agregado exitosamente')
-                    : responsesUtiles.manejarError(res, 'Error al agregar un Empleado');
-        } catch (error) {
-            responsesUtiles.manejarError(res, error, 'Error al intentar agregar un nuevo Empleado');
-        }
-    });
-    
-    
-         
-        
+    if (!isValidImageExtension(req.file.originalname)) {
+        return responsesUtiles.manejarError(res, 'Formato de archivo no válido. Solo se permiten archivos JPG, JPEG, PNG o GIF.');
+    }
+
+    try {
+        const convertirANumerico = (valor) => parseFloat(valor) || 0;
+
+        const datosEmpleado = {
+            ...req.body,
+            usuarioId: convertirANumerico(req.body.usuarioId),
+            sueldoBruto: convertirANumerico(req.body.sueldoBruto),
+            sueldoNeto: convertirANumerico(req.body.sueldoNeto),
+            llave: convertirANumerico(req.body.llave),
+            escolaridadId: convertirANumerico(req.body.escolaridadId),
+            estadocivilid: convertirANumerico(req.body.estadocivilid),
+            areaId: convertirANumerico(req.body.areaId),
+        };
+
+        const nuevoEmpleado = await EmpleadoService.crearEmpleado(datosEmpleado);
+
+        return nuevoEmpleado === 'clave_unica'
+            ? responsesUtiles.manejarError(res, 'Dato duplicado')
+            : nuevoEmpleado
+                ? responsesUtiles.OperacionExitosa(res, nuevoEmpleado, 'Empleado agregado exitosamente')
+                : responsesUtiles.manejarError(res, 'Error al agregar un Empleado');
+    } catch (error) {
+        responsesUtiles.manejarError(res, error, 'Error al intentar agregar un nuevo Empleado');
+    }
+});
+
+
+
+router.post('/agregarEmpleado', async (req, res) => {
+    console.log(req.body)
+    try {
+        const convertirANumerico = (valor) => parseFloat(valor) || 0;
+
+        const datosEmpleado = {
+            ...req.body,
+            usuarioId: convertirANumerico(req.body.usuarioId),
+            sueldoBruto: convertirANumerico(req.body.sueldoBruto),
+            sueldoNeto: convertirANumerico(req.body.sueldoNeto),
+            escolaridadId: convertirANumerico(req.body.escolaridadId),
+            estadocivilid: convertirANumerico(req.body.estadocivilid),
+            areaId: convertirANumerico(req.body.areaId),
+        };
+
+        const nuevoEmpleado = await EmpleadoService.crearEmpleado(datosEmpleado);
+
+        return nuevoEmpleado === 'clave_unica'
+            ? responsesUtiles.manejarError(res, 'Dato duplicado')
+            : nuevoEmpleado
+                ? responsesUtiles.OperacionExitosa(res, nuevoEmpleado, 'Empleado agregado exitosamente')
+                : responsesUtiles.manejarError(res, 'Error al agregar un Empleado');
+    } catch (error) {
+        responsesUtiles.manejarError(res, error, 'Error al intentar agregar un nuevo Empleado');
+    }
+});
+
+
+
+
+
 //ruta para eliminar un usuario
 router.delete('/eliminar/:id', async (req, res) => {
     const id = parseInt(req.params.id)
@@ -122,7 +153,8 @@ router.put('/editar/:id', async (req, res) => {
     }
 });
 
-router.post('/cargarNuevoArchivo', uploadImagen.single('nuevoArchivo'), async (req, res) => {
+
+router.post('/cargarNuevoArchivoImagen', uploadImagen.single('nuevoArchivo'), async (req, res) => {
     try {
         // Verificar si se ha cargado un archivo
         if (!req.file) {
@@ -135,35 +167,6 @@ router.post('/cargarNuevoArchivo', uploadImagen.single('nuevoArchivo'), async (r
         return res.status(500).json({ error: 'Error interno del servidor' });
     }
 });
-
-
-router.delete('/imagen/:nombrearchivo', (req, res) => {
-    try {
-        const { nombrearchivo } = req.params;
-        const nombreArchivoDecodificado = decodeURIComponent(nombrearchivo);
-        // Obtener la ruta del directorio actual usando import.meta.url
-        const __filename = fileURLToPath(import.meta.url);
-        const __dirname = dirname(__filename);
-
-        const rutaArchivo = join(__dirname, '..', '..', 'uploads', 'img', nombreArchivoDecodificado);
-
-        // Eliminar el archivo del sistema de archivos
-        fs.unlink(rutaArchivo, (err) => {
-            if (err) {
-                console.error('Error al eliminar el archivo:', err);
-                res.status(500).send({ mensaje: 'Archivo eliminado correctamente', status: 500 });
-            } else {
-                console.log('El archivo ha sido eliminado correctamente');
-                res.status(200).send({ mensaje: 'Archivo eliminado correctamente', status: 200 });
-            }
-        });
-    } catch (error) {
-        console.error('Error al procesar la solicitud:', error);
-        res.status(500).send('Error interno del servidor');
-    }
-});
-
-
 
 
 export default router;
